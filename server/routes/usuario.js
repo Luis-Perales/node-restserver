@@ -2,11 +2,20 @@ const express = require('express');
 const bcrypt = require('bcrypt');
 const _ = require('underscore');
 const Usuario = require('../models/usuario');
+const { verificaToken, verificaAdmin_Role } = require('../middlewares/autenticacion');
+
 const app = express();
 
 
 
-app.get('/usuario', function(req, res) {
+app.get('/usuario', verificaToken, (req, res) => {
+    /*
+    return res.json({
+        usuario: req.usuario,
+        nombre: req.usuario.nombre,
+        email: req.usuario.email
+    });*/
+
     //Los parametros opcionales caen dentro de un objeto llamado req.query, y este query yo puedo suponer que va a venir
     //una variable desde, si viene esa variable quiero que la use y si no que use la pagina 0
     let desde = req.query.desde || 0;
@@ -45,7 +54,7 @@ app.get('/usuario', function(req, res) {
 });
 
 //Obtener informacion "Procesar" y la serializa en un json y se llama bodyparser
-app.post('/usuario', function(req, res) {
+app.post('/usuario', [verificaToken, verificaAdmin_Role], function(req, res) {
 
     let body = req.body;
     // creamos la instacioa de un nuevo usuario con todas las propiedad 
@@ -82,7 +91,7 @@ app.post('/usuario', function(req, res) {
 
 //Reviviendo parametros por url
 //put -->Actualizacion de un registro
-app.put('/usuario/:id', function(req, res) {
+app.put('/usuario/:id', [verificaToken, verificaAdmin_Role], function(req, res) {
     let id = req.params.id;
     let body = _.pick(req.body, ['nombre', 'email', 'img', 'role', 'estado']); //valores que voy a actualizar con el underscore
 
@@ -106,7 +115,7 @@ app.put('/usuario/:id', function(req, res) {
 
 });
 
-app.delete('/usuario/:id', function(req, res) {
+app.delete('/usuario/:id', [verificaToken, verificaAdmin_Role], function(req, res) {
 
     let id = req.params.id;
 
